@@ -62,7 +62,7 @@
             // dataGridView2
             // 
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView2.Location = new Point(675, 46);
+            dataGridView2.Location = new Point(671, 48);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.RowHeadersWidth = 51;
             dataGridView2.RowTemplate.Height = 29;
@@ -83,7 +83,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(816, 9);
+            label2.Location = new Point(811, 9);
             label2.Name = "label2";
             label2.Size = new Size(154, 20);
             label2.TabIndex = 4;

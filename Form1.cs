@@ -1,15 +1,29 @@
 using System.Collections;
 using System.Data;
 using System.Globalization;
+using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace ProjectDataAnalysis
 {
     public partial class Form1 : Form
     {
+
+        private Dictionary<string, double> factors = new Dictionary<string, double>();
+
         public Form1()
         {
             InitializeComponent();
+
+            //inicializacia dictionary factorov
+            factors["0"] = 1;
+            factors["2"] = 1.4;
+            factors["8"] = 2.2;
+            factors["32"] = 3.6;
+            factors["128"] = 5;
+            factors["512"] = 1;
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -58,7 +72,6 @@ namespace ProjectDataAnalysis
                                                              //pri prvom nacitavani aj ten prvy riadok TODO
                                                              //  dataGridView1.Rows[row].Cells[0].Value = result;
 
-
                                         row++;
                                     }
                                 }
@@ -67,61 +80,97 @@ namespace ProjectDataAnalysis
                                     startReading = true;
 
                             }
-
                         }
-
-
                     }
                     catch (Exception ex)
                     {
                         // Handle any exceptions that may occur during the file reading process
                         Console.WriteLine("An error occurred: " + ex.Message);
                     }
-
-
                     i++;
-
                 }
 
-                DataTable dataTable = new DataTable();
-               
-                foreach (var column in data)
-                {
-                    dataTable.Columns.Add(column[0].ToString());
-                    
-                }
+                List<double> max = new List<double>();
 
-                DataRow emptyRow = dataTable.NewRow();
-                foreach (var column in data)
-                {
-                    emptyRow[column[0].ToString()] = "-";
-                }
-                dataTable.Rows.Add(emptyRow);
-                
-
-
-                for (int j = 1; j < data[0].Count; j++)
-                {
-                    DataRow newRow = dataTable.NewRow();
-
-                    foreach (var column in data)
-                    {
-                        newRow[column[0].ToString()] = column[j];
-                    }
-
-                    dataTable.Rows.Add(newRow);
-                }
-
-                dataGridView1.DataSource = dataTable;
+                dataGridView1.DataSource = createBasicGrid(data);
+                dataGridView2.DataSource = multiplyDataWithFactors(data, max);
 
                 Console.WriteLine("");
 
-                createBasicGrid(data);
             }
         }
 
-        private void createBasicGrid(ArrayList[] data)
+        private DataTable createBasicGrid(ArrayList[] data)
         {
+            DataTable dataTable = new DataTable();
+
+            foreach (var column in data)
+            {
+                dataTable.Columns.Add(column[0].ToString());
+
+            }
+
+            DataRow emptyRow = dataTable.NewRow();
+            foreach (var column in data)
+            {
+                emptyRow[column[0].ToString()] = "-";
+            }
+            dataTable.Rows.Add(emptyRow);
+
+
+
+            for (int j = 1; j < data[0].Count; j++)
+            {
+                DataRow newRow = dataTable.NewRow();
+
+                foreach (var column in data)
+                {
+                    newRow[column[0].ToString()] = column[j];
+                }
+
+                dataTable.Rows.Add(newRow);
+            }
+
+            return dataTable;
+
+        }
+
+        private DataTable multiplyDataWithFactors(ArrayList[] data, List<double> max)
+        {
+
+            DataTable dataTable = new DataTable();
+            dataTable.Columns.Add("Max");
+            DataRow emptyRow = dataTable.NewRow();
+            for (int i = 1; i < data.Length; i++)
+            {
+                string name = data[i][0].ToString();
+
+                dataTable.Columns.Add(name);
+                emptyRow[name] = factors[name];
+            }
+            emptyRow["Max"] = "-";
+            dataTable.Rows.Add(emptyRow);
+
+
+            for (int i = 1; i < data[0].Count; i++)
+            {
+                DataRow newRow = dataTable.NewRow();
+                double maxValue = double.MinValue;
+
+                for (int j = 1; j < data.Length; j++)
+                {
+                    double factor = factors[data[j][0].ToString()];
+                    double newValue = (double)data[j][i] * factor;
+                    newRow[data[j][0].ToString()] = newValue;
+                    if (newValue > maxValue)
+                        maxValue = newValue;
+                }
+                newRow["Max"] = maxValue;
+                max.Add(maxValue);
+                dataTable.Rows.Add(newRow);
+            }
+
+            return dataTable;
 
         }
 
