@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Data;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -23,8 +24,10 @@ namespace ProjectDataAnalysis
                 //najprv sa ulozi koncovka teda cislo 0,2 ... ostatne veci mi asi zatial netreba ukladat
 
 
-                ArrayList[] data = new ArrayList[dialog.FileNames.Length];
-                int i = 0;
+                ArrayList[] data = new ArrayList[dialog.FileNames.Length + 1];
+                data[0] = new ArrayList(); //arraylist pre tie hodnoty na x linke
+                data[0].Add("x");
+                int i = 1;
                 foreach (String path in dialog.FileNames)
                 {
                     data[i] = new ArrayList(); //konkretny array pre data prveho suboru
@@ -37,15 +40,26 @@ namespace ProjectDataAnalysis
                         {
                             string line;
                             bool startReading = false;
+                            int row = 0;
                             while ((line = reader.ReadLine()) != null)
                             {
 
                                 if (startReading)
                                 {
                                     string[] words = line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries); //rozdelenie slov v riadku
+                                    if (i == 1 && double.TryParse(words[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double x))
+                                    {
+                                        data[0].Add(x); //nacitavam iba druhe
+                                    }
+
                                     if (double.TryParse(words[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result)) //skusam slovo dat na double
                                     {
-                                        data[i].Add(result); //nacitavam iba prve                                       
+                                        data[i].Add(result); //nacitavam iba druhe
+                                                             //pri prvom nacitavani aj ten prvy riadok TODO
+                                                             //  dataGridView1.Rows[row].Cells[0].Value = result;
+
+
+                                        row++;
                                     }
                                 }
 
@@ -55,7 +69,6 @@ namespace ProjectDataAnalysis
                             }
 
                         }
-                        Console.WriteLine("");
 
 
                     }
@@ -65,11 +78,66 @@ namespace ProjectDataAnalysis
                         Console.WriteLine("An error occurred: " + ex.Message);
                     }
 
-                    Console.WriteLine("");
+
                     i++;
 
                 }
+
+                DataTable dataTable = new DataTable();
+               
+                foreach (var column in data)
+                {
+                    dataTable.Columns.Add(column[0].ToString());
+                    
+                }
+
+                DataRow emptyRow = dataTable.NewRow();
+                foreach (var column in data)
+                {
+                    emptyRow[column[0].ToString()] = "-";
+                }
+                dataTable.Rows.Add(emptyRow);
+                
+
+
+                for (int j = 1; j < data[0].Count; j++)
+                {
+                    DataRow newRow = dataTable.NewRow();
+
+                    foreach (var column in data)
+                    {
+                        newRow[column[0].ToString()] = column[j];
+                    }
+
+                    dataTable.Rows.Add(newRow);
+                }
+
+                dataGridView1.DataSource = dataTable;
+
+                Console.WriteLine("");
+
+                createBasicGrid(data);
             }
+        }
+
+        private void createBasicGrid(ArrayList[] data)
+        {
+
+        }
+
+        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
