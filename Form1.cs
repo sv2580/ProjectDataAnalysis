@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Numerics;
@@ -38,16 +39,20 @@ namespace ProjectDataAnalysis
                 //najprv sa ulozi koncovka teda cislo 0,2 ... ostatne veci mi asi zatial netreba ukladat
 
 
-                ArrayList[] data = new ArrayList[dialog.FileNames.Length + 1];
-                data[0] = new ArrayList(); //arraylist pre tie hodnoty na x linke
-                data[0].Add("x");
+                List<double>[] data = new List<double>[dialog.FileNames.Length + 1];
+                data[0] = new List<double>(); //arraylist pre tie hodnoty na x linke
+                data[0].Add(-1);
                 int i = 1;
                 foreach (String path in dialog.FileNames)
                 {
-                    data[i] = new ArrayList(); //konkretny array pre data prveho suboru
+                    data[i] = new List<double>(); //konkretny array pre data prveho suboru
                     string pattern = @"(?<=m)\d+(?=\.)"; //cisla co su po m a pred . 
                     Match typeOfData = Regex.Match(Path.GetFileName(path), pattern); //chcem extrahovat cislo suboru ako su 0,2 atd pred .sp
-                    data[i].Add(typeOfData.Value); //dam ho na prve miesto 
+                    if (double.TryParse(typeOfData.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double resultType)) //skusam slovo dat na double
+                    {
+                        data[i].Add(resultType);
+                    }
+
                     try
                     {
                         using (StreamReader reader = new StreamReader(path))
@@ -90,28 +95,22 @@ namespace ProjectDataAnalysis
                     i++;
                 }
 
-                List<double> max = new List<double>();
-                double[] maximum = new double[601];
-                double[] example = new double[601];
+                double[] maximum = new double[data[0].Count - 1];
+                double[] example = new double[data[0].Count - 1];
 
 
-
-                for (int x = 1; x < data[0].Count; x++)
-                {
-                    example[x - 1] = (double)data[0][x];
-                }
+                data[0].GetRange(1, data[0].Count - 1).ToArray().CopyTo(example, 0); //prekopirujem z prveho stlpca dat example stlpec
+                //bez prveho riadku do arrayu kvoli plotu
 
 
                 dataGridView1.DataSource = createBasicGrid(data);
-                dataGridView2.DataSource = multiplyDataWithFactors(data, max);
+                dataGridView2.DataSource = multiplyDataWithFactors(data, maximum);
+
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; //nastavenie nech su sirky stlpcov rovnake
+                dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
 
-                for (int x = 0; x < max.Count; x++)
-                {
-                    maximum[x] = max[x];
-                }
-
-                formsPlot1.Plot.PlotScatter(example,maximum);
+                formsPlot1.Plot.PlotScatter(example, maximum);
                 formsPlot1.Refresh();
 
                 Console.WriteLine("");
@@ -119,14 +118,13 @@ namespace ProjectDataAnalysis
             }
         }
 
-        private DataTable createBasicGrid(ArrayList[] data)
+        private DataTable createBasicGrid(List<double>[] data)
         {
             DataTable dataTable = new DataTable();
 
             foreach (var column in data)
             {
                 dataTable.Columns.Add(column[0].ToString());
-
             }
 
             DataRow emptyRow = dataTable.NewRow();
@@ -150,11 +148,13 @@ namespace ProjectDataAnalysis
                 dataTable.Rows.Add(newRow);
             }
 
+            dataTable.Columns[0].ColumnName = " ";
+
             return dataTable;
 
         }
 
-        private DataTable multiplyDataWithFactors(ArrayList[] data, List<double> max)
+        private DataTable multiplyDataWithFactors(List<double>[] data, double[] max)
         {
 
             DataTable dataTable = new DataTable();
@@ -185,7 +185,7 @@ namespace ProjectDataAnalysis
                         maxValue = newValue;
                 }
                 newRow["Max"] = maxValue;
-                max.Add(maxValue);
+                max[i - 1] = maxValue;
                 dataTable.Rows.Add(newRow);
             }
 
@@ -210,10 +210,15 @@ namespace ProjectDataAnalysis
 
         private void formsPlot1_Load(object sender, EventArgs e)
         {
-            
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click_1(object sender, EventArgs e)
         {
 
         }
