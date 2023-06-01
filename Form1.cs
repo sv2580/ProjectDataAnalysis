@@ -91,9 +91,27 @@ namespace ProjectDataAnalysis
                 }
 
                 List<double> max = new List<double>();
+                double[] maximum = new double[601];
+                double[] example = new double[601];
+
+
+
+                for (int x = 1; x < data[0].Count; x++)
+                {
+                    example[x - 1] = (double)data[0][x];
+                }
+
 
                 dataGridView1.DataSource = createBasicGrid(data);
                 dataGridView2.DataSource = multiplyDataWithFactors(data, max);
+
+
+                for (int x = 0; x < max.Count; x++)
+                {
+                    maximum[x] = max[x];
+                }
+
+                formsPlot1.Plot.PlotScatter(maximum,example);
 
                 Console.WriteLine("");
 
@@ -185,6 +203,16 @@ namespace ProjectDataAnalysis
         }
 
         private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void formsPlot1_Load(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
         {
 
         }
