@@ -111,7 +111,8 @@ namespace ProjectDataAnalysis
                     maximum[x] = max[x];
                 }
 
-                formsPlot1.Plot.PlotScatter(maximum,example);
+                formsPlot1.Plot.PlotScatter(example,maximum);
+                formsPlot1.Refresh();
 
                 Console.WriteLine("");
 

@@ -48,6 +48,8 @@
             this.button1.TabIndex = 0;
             this.button1.Text = "Načítať dáta";
             this.button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
+
             // 
             // dataGridView1
             // 
@@ -68,6 +70,8 @@
             this.dataGridView2.RowTemplate.Height = 29;
             this.dataGridView2.Size = new System.Drawing.Size(431, 382);
             this.dataGridView2.TabIndex = 2;
+            dataGridView2.CellContentClick += dataGridView2_CellContentClick;
+
             // 
             // label1
             // 
